@@ -1,14 +1,25 @@
 import type {HttpFunction} from '@google-cloud/functions-framework/build/src/functions';
 import axios from 'axios';
+import _ from 'lodash';
 import {getNewCredential} from '../access_token';
-import {
-  assetBaseUrl,
-  currentCredentialType,
-  sharingApiBaseUrl,
-  trimEnd,
-} from '../constant';
+import {assetBaseUrl, sharingApiBaseUrl} from '../auth/env';
+import {containers, ContainersType} from '../auth/users';
+import {currentCredentialType, trimEnd} from '../constant';
 
 let currentCredential: currentCredentialType | null = null;
+
+const getContainerName = (path: string): string => {
+  const pathArr = path.split('/');
+  const containerId = pathArr[1];
+  const container = _.find(containers, {id: containerId});
+  return container!.containerName;
+};
+
+const getFilePath = (path: string) => {
+  const pathArr = path.split('/');
+  const filePathArr = _.slice(pathArr, 4, pathArr.length);
+  return filePathArr.join('/');
+};
 
 const filePath2sharingToken = (
   containerName: string,
@@ -43,8 +54,10 @@ const getInstantUrl = async (sharingToken: string): Promise<string> => {
 export const getInstantFileUrl: HttpFunction = async (req, res) => {
   console.log('[*] == started getFileUrl() ==');
 
-  const containerName = 'test';
-  const filePath = 'status.txt';
+  const path = req.path;
+
+  const containerName = getContainerName(path);
+  const filePath = getFilePath(path);
 
   const now = new Date();
   if (currentCredential === null || now > currentCredential.expiresDate) {

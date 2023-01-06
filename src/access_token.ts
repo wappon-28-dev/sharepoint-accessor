@@ -1,11 +1,6 @@
 import axios from 'axios';
-import {
-  clientId,
-  clientSecret,
-  currentCredentialType,
-  getAccessTokenResType,
-  tenantId,
-} from './constant';
+import {clientId, clientSecret, tenantId} from './auth/env';
+import {currentCredentialType, getAccessTokenResType} from './constant';
 
 export const getNewCredential = async (): Promise<currentCredentialType> => {
   console.log('[･] update access Token');
