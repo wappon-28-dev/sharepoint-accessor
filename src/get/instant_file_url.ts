@@ -95,5 +95,5 @@ export const getInstantFileUrl: HttpFunction = async (req, res) => {
     throw Error('cannot get instantUrl');
   });
 
-  res.status(400).send(instantUrl);
+  res.redirect(`${instantUrl}`);
 };
