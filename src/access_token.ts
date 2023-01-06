@@ -28,7 +28,9 @@ export const getNewCredential = async (): Promise<currentCredentialType> => {
     expiresDate,
     accessToken: resData['access_token'],
   };
-  console.log(`[*] updated currentCredential =>\n${currentCredential}`);
+  console.log(
+    `[*] updated currentCredential =>\n${JSON.stringify(currentCredential)}`
+  );
 
   return currentCredential;
 };

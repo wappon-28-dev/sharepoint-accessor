@@ -1,9 +1,8 @@
 {
   "name": "sharepoint-accessor-get",
+  "main": "src/main.js",
   "version": "0.0.0",
   "description": "",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
   "files": [
     "build/src"
   ],
@@ -16,11 +15,10 @@
   "scripts": {
     "lint": "gts lint",
     "clean": "gts clean",
-    "start": "functions-framework --source=build/src/ --target=main",
-    "watch": "concurrently 'tsc -w' 'nodemon --watch ./build/ --exec bun run start'",
+    "start": "functions-framework --source=dist/src/ --target=main",
+    "watch": "concurrently 'tsc -w' 'nodemon --watch ./dist/ --exec bun run start'",
     "compile": "tsc",
     "fix": "gts fix",
-    "prepare": "bun run compile",
     "pretest": "bun run compile",
     "posttest": "bun run lint"
   },

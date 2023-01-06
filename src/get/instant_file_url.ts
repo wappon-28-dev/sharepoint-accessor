@@ -33,7 +33,9 @@ const getInstantUrl = async (sharingToken: string): Promise<string> => {
     }
   );
 
-  console.log(`[*] GET sharingAPI received successfully =>\n${res.data}`);
+  console.log(
+    `[*] GET sharingAPI received successfully =>\n${JSON.stringify(res.data)}`
+  );
 
   return res.data['@microsoft.graph.downloadUrl'];
 };
