@@ -40,7 +40,7 @@ export const passOrUpdateCredential = async (
     return currentCredential;
   }
 
-  console.log('[･] currentCredential is null or expired');
+  console.log('[･] currentCredential is undefined or expired');
 
   let newCredential: CredentialType | undefined;
 
@@ -71,7 +71,7 @@ export const passOrUpdateCredential = async (
       res,
       500,
       'Cannot update credential',
-      'returned new credential is null'
+      'returned new credential is undefined'
     );
     process.exit(1);
   }

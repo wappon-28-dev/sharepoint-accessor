@@ -49,7 +49,7 @@ export const getInstFileUrl: HttpFunction = async (req, res) => {
         res,
         500,
         'Cannot get instUrl from Graph API',
-        ' Cannot detect reasons'
+        'Cannot detect reasons'
       );
     }
   }
@@ -58,10 +58,11 @@ export const getInstFileUrl: HttpFunction = async (req, res) => {
     throwErr(
       res,
       500,
-      `Internal server error}`,
+      'Internal server error',
       'Returned instUrl is undefined'
     );
+    process.exit(1);
   }
 
-  res.redirect(`${instUrl}`);
+  res.redirect(303, instUrl);
 };
