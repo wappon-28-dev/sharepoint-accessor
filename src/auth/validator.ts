@@ -1,13 +1,13 @@
-import {HttpFunction} from '@google-cloud/functions-framework';
 import _ from 'lodash';
-import {containers, OperationType} from './users';
+import {containers} from './users';
 import validator from 'validator';
+import {Response} from 'express';
+import {throwErr} from '../constant';
+import {getFilePath} from '../get/util';
 
-export const pathValidator = (
-  path: string
-): {statusCode: number; message: string} | true => {
+export const pathValidator = (res: Response, path: string): void | never => {
   if (path === '/') {
-    return {statusCode: 200, message: "Howdy! Here's sharepoint-accessor!"};
+    res.send("Howdy! Here's sharepoint-accessor!");
   }
 
   const pathArr = path.split('/');
@@ -15,28 +15,49 @@ export const pathValidator = (
   const requestedOperation = `${pathArr[2]}/${pathArr[3]}`;
 
   if (pathArr.length < 4) {
-    return {statusCode: 400, message: 'syntax is invalid.'};
+    throwErr(res, 400, 'Syntax is invalid', '');
   }
   if (!validator.isUUID(containerId)) {
-    return {statusCode: 400, message: 'containerID is invalid.'};
+    throwErr(res, 400, 'ContainerID is invalid', '');
   }
 
   const container = _.find(containers, {id: containerId});
 
   if (container === undefined) {
-    return {statusCode: 403, message: 'containerID not registered'};
+    throwErr(res, 403, 'ContainerID not registered', '');
+    return;
   }
 
   if (
     requestedOperation !== 'admin/admin' &&
-    requestedOperation !== 'get/instant_file_url'
+    requestedOperation !== 'get/inst_file_url'
   ) {
-    return {statusCode: 400, message: 'requested operation not found'};
+    throwErr(res, 400, 'Requested operation not found', '');
+    process.exit(1);
   }
 
   if (!container.allowedOperations.includes(requestedOperation)) {
-    return {statusCode: 403, message: 'requested operation not allowed'};
+    throwErr(
+      res,
+      405,
+      'Method not allowed',
+      'Requested operation not allowed on this containerId'
+    );
   }
+};
 
-  return true;
+export const getInstFileUrlValidator = (
+  res: Response,
+  path: string
+): void | never => {
+  const filePath = getFilePath(path);
+
+  if ((filePath.match(/\./g) || []).length !== 1) {
+    throwErr(
+      res,
+      400,
+      'Syntax is invalid',
+      'The number of file extension (period) is not 1'
+    );
+  }
 };

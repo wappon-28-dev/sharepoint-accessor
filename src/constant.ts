@@ -1,8 +1,10 @@
+import {Response} from '@google-cloud/functions-framework';
+
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-type currentCredentialType = {
+type CredentialType = {
   expiresDate: Date;
   accessToken: string;
 };
@@ -21,5 +23,20 @@ const trimEnd = (str: string, c: string) => {
   return str.substring(0, i + 1);
 };
 
-export {trimEnd};
-export type {currentCredentialType, getAccessTokenResType};
+const throwErr = (
+  res: Response,
+  statusCode: number,
+  message: string,
+  reason: string
+): never => {
+  console.log(`[!] ${message}`);
+  res.status(statusCode).send({
+    message: message,
+    reason: reason,
+  });
+
+  throw Error(message);
+};
+
+export {trimEnd, throwErr};
+export type {CredentialType, getAccessTokenResType};

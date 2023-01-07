@@ -1,8 +1,9 @@
-import axios from 'axios';
+import Axios from 'axios';
+import {Response} from 'express';
 import {clientId, clientSecret, tenantId} from './auth/env';
-import {currentCredentialType, getAccessTokenResType} from './constant';
+import {CredentialType, getAccessTokenResType, throwErr} from './constant';
 
-export const getNewCredential = async (): Promise<currentCredentialType> => {
+export const getNewCredential = async (): Promise<CredentialType> => {
   console.log('[･] update access Token');
   const params = new URLSearchParams();
   params.append('client_id', clientId);
@@ -10,7 +11,7 @@ export const getNewCredential = async (): Promise<currentCredentialType> => {
   params.append('grant_type', 'client_credentials');
   params.append('scope', 'https://graph.microsoft.com/.default');
 
-  const res = await axios.post(
+  const res = await Axios.post(
     `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
     params
   );
@@ -24,8 +25,56 @@ export const getNewCredential = async (): Promise<currentCredentialType> => {
     accessToken: resData['access_token'],
   };
   console.log(
-    `[*] updated currentCredential =>\n${JSON.stringify(currentCredential)}`
+    `[*] Updated currentCredential =>\n${JSON.stringify(currentCredential)}`
   );
 
   return currentCredential;
+};
+
+export const passOrUpdateCredential = async (
+  res: Response,
+  currentCredential?: CredentialType
+): Promise<CredentialType> => {
+  const now = new Date();
+  if (currentCredential !== undefined && now < currentCredential.expiresDate) {
+    return currentCredential;
+  }
+
+  console.log('[･] currentCredential is null or expired');
+
+  let newCredential: CredentialType | undefined;
+
+  try {
+    newCredential = await getNewCredential();
+  } catch (e) {
+    if (Axios.isAxiosError(e) && e.response) {
+      const errReason = e.response.data;
+
+      throwErr(
+        res,
+        e.response.status,
+        `Cannot update credential => \n ${JSON.stringify(errReason)}`,
+        errReason.error.message
+      );
+    } else {
+      throwErr(
+        res,
+        500,
+        'Cannot update credential',
+        `Cannot detect reasons =>\n${e}}`
+      );
+    }
+  }
+
+  if (newCredential === undefined) {
+    throwErr(
+      res,
+      500,
+      'Cannot update credential',
+      'returned new credential is null'
+    );
+    process.exit(1);
+  }
+
+  return newCredential;
 };
